@@ -1,5 +1,5 @@
 import { Suspense, useCallback } from "react";
-import { useSetAtom } from "jotai";
+import { useAtomCallback } from "jotai/utils";
 import { ErrorBoundary } from "react-error-boundary";
 
 import { Button } from "@/components/ui/button";
@@ -18,12 +18,15 @@ const resolveErrorMessage = (error: unknown): string => {
 };
 
 const WebhookErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => {
-  const refreshWebhooks = useSetAtom(webhooksAtom);
-
-  const handleRetry = useCallback(() => {
-    refreshWebhooks();
-    resetErrorBoundary();
-  }, [refreshWebhooks, resetErrorBoundary]);
+  const handleRetry = useAtomCallback(
+    useCallback(
+      (_get, set) => {
+        set(webhooksAtom);
+        resetErrorBoundary();
+      },
+      [resetErrorBoundary],
+    ),
+  );
 
   return (
     <div className={styles.errorRoot} role="alert">
