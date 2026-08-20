@@ -26,4 +26,20 @@ describe("AddWebhookForm", () => {
     expect(onSubmit).not.toHaveBeenCalled();
     await expect.element(page.getByText(/discord/i)).toBeVisible();
   });
+
+  it("submits successfully after correcting a previously invalid URL", async () => {
+    const onSubmit = vi.fn().mockResolvedValue(undefined);
+    render(<AddWebhookForm onSubmit={onSubmit} />);
+    await page.getByLabelText("NAME").fill("x");
+    await page.getByLabelText("URL").fill("https://example.com");
+    await page.getByRole("button", { name: "ADD" }).click();
+    expect(onSubmit).not.toHaveBeenCalled();
+
+    await page.getByLabelText("URL").fill("https://discord.com/api/webhooks/1/x");
+    await page.getByRole("button", { name: "ADD" }).click();
+    expect(onSubmit).toHaveBeenCalledWith({
+      name: "x",
+      url: "https://discord.com/api/webhooks/1/x",
+    });
+  });
 });
