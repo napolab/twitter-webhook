@@ -8,7 +8,7 @@ import { webhookInputSchema } from "@/shared/webhooks/schema";
 import * as styles from "./styles.css";
 
 import type { WebhookInput } from "@/shared/webhooks/schema";
-import type { FormEvent } from "react";
+import type { SubmitEvent } from "react";
 
 const URL_ERROR_MESSAGE =
   "discord.com/api/webhooks/ から始まる Discord webhook の URL を入力してください";
@@ -44,7 +44,7 @@ export const AddWebhookForm = ({ onSubmit }: AddWebhookFormProps) => {
   const [errors, setErrors] = useState<FieldErrors>({});
 
   const handleSubmit = useCallback(
-    async (event: FormEvent<HTMLFormElement>) => {
+    async (event: SubmitEvent<HTMLFormElement>) => {
       event.preventDefault();
 
       const result = webhookInputSchema.safeParse({ name, url });
