@@ -4,6 +4,7 @@ import { z } from "zod";
 import { webhookInputSchema } from "@/shared/webhooks/schema";
 import type { Webhook } from "@/shared/webhooks/schema";
 import { readWebhooks, writeWebhooks } from "@/shared/webhooks/storage";
+import { buildDiscordPayload } from "@/shared/discord/payload";
 
 export const app = new Hono()
   .basePath("/rpc")
@@ -32,6 +33,39 @@ export const app = new Hono()
     const current = await readWebhooks();
     await writeWebhooks(current.filter((w) => w.id !== id));
     return c.json({ ok: true });
-  });
+  })
+  .post(
+    "/send",
+    zValidator("json", z.object({ url: z.url(), postedAt: z.string() })),
+    async (c) => {
+      const input = c.req.valid("json");
+      const payload = buildDiscordPayload(input);
+      const webhooks = await readWebhooks();
+      const enabled = webhooks.filter((w) => w.enabled);
+      const results = await Promise.all(
+        enabled.map(async (w) => {
+          const sendOne = async (): Promise<{
+            id: string;
+            name: string;
+            ok: boolean;
+            status?: number;
+          }> => {
+            try {
+              const res = await fetch(w.url, {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify(payload),
+              });
+              return { id: w.id, name: w.name, ok: res.ok, status: res.status };
+            } catch {
+              return { id: w.id, name: w.name, ok: false };
+            }
+          };
+          return sendOne();
+        }),
+      );
+      return c.json({ results });
+    },
+  );
 
 export type AppType = typeof app;
