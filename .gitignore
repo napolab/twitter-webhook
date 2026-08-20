@@ -7,6 +7,10 @@ dist/
 # Panda CSS
 styled-system/
 
+# vitest browser-mode artifacts
+.vitest-attachments/
+__screenshots__/
+
 # env / logs
 .env
 .env.*
