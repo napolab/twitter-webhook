@@ -1,0 +1,6 @@
+/* font-family, color-scheme, and margin are owned by Panda's globalCss
+   (assets/global.css / panda.config.ts) — this file only adds popup-specific
+   sizing that the design system doesn't cover. */
+body {
+  min-width: 320px;
+}
