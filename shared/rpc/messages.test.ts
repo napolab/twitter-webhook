@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { isRPCMessage, isSerializedRequest, isSerializedResponse } from "./messages";
+import {
+  RPC_MESSAGE_TYPE,
+  isRPCMessage,
+  isSerializedRequest,
+  isSerializedResponse,
+} from "./messages";
+import type { RPCMessage } from "./messages";
 
 describe("isSerializedResponse", () => {
   it("accepts a valid serialized response", () => {
@@ -36,13 +42,13 @@ describe("isSerializedRequest", () => {
     ).toBe(true);
   });
 
-  it("accepts a valid serialized request with an undefined body", () => {
+  it("accepts a valid serialized request with a null body", () => {
     expect(
       isSerializedRequest({
         url: "http://extension.internal/rpc/webhooks",
         method: "GET",
         headers: [],
-        body: undefined,
+        body: null,
       }),
     ).toBe(true);
   });
@@ -53,15 +59,23 @@ describe("isSerializedRequest", () => {
   });
 
   it("rejects missing or wrong-typed fields", () => {
-    expect(isSerializedRequest({ method: "GET", headers: [], body: undefined })).toBe(false);
-    expect(isSerializedRequest({ url: 1, method: "GET", headers: [], body: undefined })).toBe(
-      false,
-    );
-    expect(isSerializedRequest({ url: "u", method: 1, headers: [], body: undefined })).toBe(false);
-    expect(isSerializedRequest({ url: "u", method: "GET", headers: "none", body: undefined })).toBe(
+    expect(isSerializedRequest({ method: "GET", headers: [], body: null })).toBe(false);
+    expect(isSerializedRequest({ url: 1, method: "GET", headers: [], body: null })).toBe(false);
+    expect(isSerializedRequest({ url: "u", method: 1, headers: [], body: null })).toBe(false);
+    expect(isSerializedRequest({ url: "u", method: "GET", headers: "none", body: null })).toBe(
       false,
     );
     expect(isSerializedRequest({ url: "u", method: "GET", headers: [], body: 1 })).toBe(false);
+  });
+
+  it("rejects a missing body key (JSON.stringify drops undefined values)", () => {
+    expect(isSerializedRequest({ url: "u", method: "GET", headers: [] })).toBe(false);
+  });
+
+  it("rejects an undefined body (JSON can never carry it — only null survives the wire)", () => {
+    expect(isSerializedRequest({ url: "u", method: "GET", headers: [], body: undefined })).toBe(
+      false,
+    );
   });
 });
 
@@ -70,7 +84,7 @@ describe("isRPCMessage", () => {
     expect(
       isRPCMessage({
         type: "hono-rpc",
-        request: { url: "u", method: "GET", headers: [], body: undefined },
+        request: { url: "u", method: "GET", headers: [], body: null },
       }),
     ).toBe(true);
   });
@@ -85,5 +99,19 @@ describe("isRPCMessage", () => {
     expect(isRPCMessage({ type: "other" })).toBe(false);
     expect(isRPCMessage(null)).toBe(false);
     expect(isRPCMessage("hono-rpc")).toBe(false);
+  });
+
+  it("survives a JSON round-trip for a GET message (regression: Chrome's real runtime.sendMessage JSON-serializes and drops `undefined` keys, unlike fakeBrowser which passes objects by reference)", () => {
+    const message: RPCMessage = {
+      type: RPC_MESSAGE_TYPE,
+      request: {
+        url: "http://extension.internal/rpc/webhooks",
+        method: "GET",
+        headers: [],
+        body: null,
+      },
+    };
+    const wire: unknown = JSON.parse(JSON.stringify(message));
+    expect(isRPCMessage(wire)).toBe(true);
   });
 });

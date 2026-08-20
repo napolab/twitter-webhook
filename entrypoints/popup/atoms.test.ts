@@ -18,11 +18,18 @@ import {
 // at least one listener returned `true` synchronously (chrome.runtime.onMessage semantics),
 // so `handleRPC(...).then(sendResponse, ...)` inside a listener that returns `true` works
 // the same way it does against the real background entrypoint.
+//
+// fakeBrowser passes the message object by reference — no JSON round-trip — unlike real
+// Chrome, which JSON-serializes every runtime.sendMessage payload and drops any key whose
+// value is `undefined`. That gap is exactly what let the `body: undefined` regression slip
+// past this test double (see shared/rpc/messages.test.ts's JSON round-trip regression
+// test), so the listener here forces the same round-trip before validating the message.
 const registerRPCListener = () => {
   fakeBrowser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-    if (!isRPCMessage(message)) return undefined;
+    const wire: unknown = JSON.parse(JSON.stringify(message));
+    if (!isRPCMessage(wire)) return undefined;
 
-    handleRPC(message.request).then(sendResponse, (error: unknown) => {
+    handleRPC(wire.request).then(sendResponse, (error: unknown) => {
       sendResponse({
         status: 500,
         headers: [["content-type", "application/json"]],

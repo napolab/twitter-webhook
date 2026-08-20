@@ -6,6 +6,6 @@ export const serializeRequest = async (request: Request): Promise<SerializedRequ
     url: request.url,
     method: request.method,
     headers: [...request.headers.entries()],
-    body: hasBody ? await request.text() : undefined,
+    body: hasBody ? await request.text() : null,
   };
 };

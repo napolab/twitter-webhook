@@ -12,7 +12,7 @@ describe("rpc serialization round-trip", () => {
       url: "http://extension.internal/rpc/webhooks",
       method: "GET",
       headers: [],
-      body: undefined,
+      body: null,
     });
   });
 

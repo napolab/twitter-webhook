@@ -1,10 +1,16 @@
 export const RPC_MESSAGE_TYPE = "hono-rpc" as const;
 
+// `body` is `string | null` (never `undefined`): the wire format crosses
+// `browser.runtime.sendMessage`, which JSON-serializes the message in real
+// Chrome. JSON.stringify drops any key whose value is `undefined`, so an
+// `undefined` body would vanish entirely on the way over and fail
+// `isSerializedRequest`'s presence check. `null` survives JSON round-trips
+// intact, so it is the only valid "no body" representation here.
 export type SerializedRequest = {
   url: string;
   method: string;
   headers: [string, string][];
-  body: string | undefined;
+  body: string | null;
 };
 
 export type SerializedResponse = {
@@ -23,7 +29,7 @@ export const isSerializedRequest = (value: unknown): value is SerializedRequest 
   if (!("method" in value) || typeof value.method !== "string") return false;
   if (!("headers" in value) || !isHeaderPairs(value.headers)) return false;
   if (!("body" in value)) return false;
-  return typeof value.body === "string" || value.body === undefined;
+  return typeof value.body === "string" || value.body === null;
 };
 
 export const isSerializedResponse = (value: unknown): value is SerializedResponse => {
