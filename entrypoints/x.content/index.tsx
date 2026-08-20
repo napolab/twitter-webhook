@@ -61,7 +61,19 @@ export default defineContentScript({
       // `waitElement` and mounts/removes as it appears/disappears (see
       // `node_modules/wxt/dist/utils/content-script-ui/shared.mjs`,
       // `autoMountUi`), so scrolled-away buttons are actually unmounted.
-      ui.autoMount();
+      //
+      // `{ once: true }` is required: our anchor id is a fresh
+      // `crypto.randomUUID()` per mount, so it can never reappear once
+      // removed. Without `once`, `autoMountUi`'s `observeElement` loop
+      // (shared.mjs's `while (!abortController.signal.aborted)`) would, after
+      // the first unmount, re-enter `waitElement` watching for the anchor to
+      // come back — forever, since it never will — leaving one permanently
+      // running whole-document MutationObserver per scanned tweet. With
+      // `once: true`, the `else` branch that runs on first disappearance
+      // (`uiCallbacks.unmount(); if (options.once) uiCallbacks.stopAutoMount();`)
+      // aborts the controller right after that single unmount, so the loop's
+      // next `waitElement` call never happens.
+      ui.autoMount({ once: true });
     };
 
     const scan = async () => {
