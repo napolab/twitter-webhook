@@ -1,3 +1,4 @@
+import { enableShadowDOM } from "react-stately/private/flags/flags";
 import { createRoot } from "react-dom/client";
 import { defineContentScript } from "wxt/utils/define-content-script";
 import { createShadowRootUi } from "wxt/utils/content-script-ui/shadow-root";
@@ -7,6 +8,24 @@ import { appToastQueue, ToastContainer } from "@/components/ui/toast";
 import { SendButton } from "./send-button";
 import "@/assets/global.css";
 import type { SendResult } from "@/shared/rpc/app";
+
+// react-aria's usePress verifies a press's release target with `nodeContains`
+// (react-aria/dist/private/utils/shadowdom/DOMFunctions.mjs), which only walks
+// into shadow roots when this experimental flag is on. Off (the default),
+// a real trusted pointerup on our shadow-DOM button is retargeted by the
+// browser to the shadow HOST at the document level, plain `node.contains()`
+// fails the containment check against the button, and usePress cancels the
+// press — onPress never fires. This is why a synthetic `.click()` "works"
+// (it takes a different, AT-fallback path) while real user clicks silently
+// do nothing. `react-stately/private/flags/flags` is not re-exported from
+// react-stately's root; it's imported from this exact deep path by
+// react-aria's own bundle too (verified in DOMFunctions.mjs), and
+// `react-stately` was added as a direct (exact-pinned 3.49.0, matching what
+// react-aria/react-aria-components already depend on) dependency so pnpm
+// resolves both to the *same* store entry — required for the mutable flag
+// set here to be visible to react-aria's own imported instance of this
+// module, not a separate copy.
+enableShadowDOM();
 
 const INJECTED_ATTR = "data-twitter-webhook-injected";
 const ANCHOR_ID_ATTR = "data-twitter-webhook-anchor-id";
