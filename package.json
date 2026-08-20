@@ -13,7 +13,7 @@
     "typecheck": "tsgo --noEmit",
     "test": "vitest run",
     "test:browser": "vitest run --config vitest.browser.config.ts",
-    "prepare": "husky && wxt prepare"
+    "prepare": "husky && wxt prepare && panda codegen"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.9.0",
