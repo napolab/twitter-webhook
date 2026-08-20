@@ -1,4 +1,4 @@
-import { Heading } from "react-aria-components";
+import { Heading, Text } from "react-aria-components";
 
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
@@ -27,15 +27,20 @@ export const ConfirmDialog = ({
   };
 
   return (
-    <Dialog isOpen={isOpen} onOpenChange={handleOpenChange} className={styles.root}>
+    <Dialog
+      isOpen={isOpen}
+      onOpenChange={handleOpenChange}
+      role="alertdialog"
+      className={styles.root}
+    >
       <div className={styles.titleRoot}>
         <Heading slot="title" className={styles.title}>
           {title}
         </Heading>
       </div>
-      <p slot="description" className={styles.message}>
+      <Text slot="description" elementType="p" className={styles.message}>
         {message}
-      </p>
+      </Text>
       <div className={styles.actions}>
         <Button variant="outline" onPress={onClose}>
           CANCEL

@@ -38,4 +38,20 @@ describe("ConfirmDialog", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(onConfirm).not.toHaveBeenCalled();
   });
+
+  it("wires the message as the dialog's accessible description", async () => {
+    render(
+      <ConfirmDialog
+        isOpen
+        title="DELETE WEBHOOK"
+        message="alerts を削除します"
+        confirmLabel="DELETE"
+        onConfirm={() => {}}
+        onClose={() => {}}
+      />,
+    );
+    await expect
+      .element(page.getByRole("alertdialog"))
+      .toHaveAccessibleDescription("alerts を削除します");
+  });
 });

@@ -11,6 +11,9 @@ type DialogProps = {
   onOpenChange: (open: boolean) => void;
   isDismissable?: boolean;
   "aria-label"?: string;
+  // "alertdialog" wires the slotted description's id onto aria-describedby
+  // (react-aria only auto-generates that association for alertdialogs).
+  role?: "dialog" | "alertdialog";
   // Extra classes for the Modal so each consumer keeps its own sizing.
   className?: string;
   children: ReactNode;
@@ -31,7 +34,9 @@ export const Dialog = ({
     className={styles.overlay}
   >
     <Modal className={clsx(styles.root, className)}>
-      <AriaDialog aria-label={rest["aria-label"]}>{children}</AriaDialog>
+      <AriaDialog aria-label={rest["aria-label"]} role={rest.role}>
+        {children}
+      </AriaDialog>
     </Modal>
   </ModalOverlay>
 );
