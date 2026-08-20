@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Button } from "react-aria-components";
 
 import { CheckIcon, SendIcon, SpinnerIcon } from "@/components/ui/icons";
@@ -28,9 +28,11 @@ const iconFor = (state: SendState): ReactElement => {
 
 export const SendButton = ({ onSend }: SendButtonProps) => {
   const [state, setState] = useState<SendState>("idle");
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const handlePress = useCallback(async () => {
     if (state === "sending") return;
+    clearTimeout(resetTimerRef.current);
     setState("sending");
     try {
       await onSend();
@@ -39,7 +41,7 @@ export const SendButton = ({ onSend }: SendButtonProps) => {
       console.error("[twitter-webhook] send failed:", error);
       setState("error");
     } finally {
-      setTimeout(() => setState("idle"), 2500);
+      resetTimerRef.current = setTimeout(() => setState("idle"), 2500);
     }
   }, [onSend, state]);
 
