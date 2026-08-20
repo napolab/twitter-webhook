@@ -1,0 +1,44 @@
+{
+  "name": "twitter-webhook",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Twitter Webhook Chrome extension",
+  "type": "module",
+  "scripts": {
+    "dev": "wxt",
+    "build": "wxt build",
+    "zip": "wxt zip",
+    "lint": "oxlint . && oxfmt --check .",
+    "fmt": "oxlint --fix . && oxfmt .",
+    "typecheck": "tsgo --noEmit",
+    "test": "vitest run",
+    "test:browser": "vitest run --config vitest.browser.config.ts",
+    "prepare": "husky && wxt prepare"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "^0.9.0",
+    "dayjs": "^1.11.23",
+    "hono": "^4.13.3",
+    "react": "^19.2.4",
+    "react-aria-components": "^1.20.0",
+    "react-dom": "^19.2.4",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@pandacss/dev": "^1.12.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@typescript/native-preview": "7.0.0-dev.20260707.2",
+    "@vitest/browser": "^4.1.11",
+    "@wxt-dev/module-react": "^1.1.5",
+    "husky": "^9.1.7",
+    "oxfmt": "^0.64.0",
+    "oxlint": "^1.79.0",
+    "playwright": "^1.62.1",
+    "postcss": "^8.5.26",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11",
+    "web-ext": "^10.5.0",
+    "wxt": "^0.21.3"
+  }
+}
