@@ -1,7 +1,7 @@
 import { defineConfig, defineRecipe } from "@pandacss/dev";
 
 // Design system ported from naporin0624/Cannelloni (neo-brutalist / "terminal-print"):
-// sharp corners (none/pill only), 1-2px ink borders, monospace UI labels, one electric-blue
+// sharp corners (none/pill only), 2px ink borders, monospace UI labels, one electric-blue
 // accent, marching-ants focus ring. Tokens/semanticTokens are copied verbatim from the
 // source of truth (Cannelloni's panda.config.ts). The Electron app-shell rules
 // (`#root { position: fixed }`, `overflow: hidden` window lock) are dropped — this is a

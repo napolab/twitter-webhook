@@ -1,9 +1,6 @@
-:root {
-  font-family: system-ui, sans-serif;
-  color-scheme: light dark;
-}
-
+/* font-family, color-scheme, and margin are owned by Panda's globalCss
+   (assets/global.css / panda.config.ts) — this file only adds popup-specific
+   sizing that the design system doesn't cover. */
 body {
-  margin: 0;
   min-width: 320px;
 }
