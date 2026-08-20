@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import { Button } from "react-aria-components";
 
 import { CheckIcon, SendIcon, SpinnerIcon } from "@/components/ui/icons";
+import { appToastQueue } from "@/components/ui/toast";
 
 import * as styles from "./styles.css";
 
@@ -31,6 +32,7 @@ export const SendButton = ({ onSend }: SendButtonProps) => {
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const handlePress = useCallback(async () => {
+    console.log("[twitter-webhook] send button pressed");
     if (state === "sending") return;
     clearTimeout(resetTimerRef.current);
     setState("sending");
@@ -39,6 +41,8 @@ export const SendButton = ({ onSend }: SendButtonProps) => {
       setState("success");
     } catch (error) {
       console.error("[twitter-webhook] send failed:", error);
+      const reason = error instanceof Error ? error.message : "unknown error";
+      appToastQueue.add({ title: `送信失敗: ${reason}`, variant: "error" }, { timeout: 6000 });
       setState("error");
     } finally {
       resetTimerRef.current = setTimeout(() => setState("idle"), 2500);
