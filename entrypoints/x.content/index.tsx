@@ -5,9 +5,19 @@ import { rpc } from "@/shared/rpc/client";
 import { extractTweetInfo } from "@/shared/tweet/extract";
 import { SendButton } from "./send-button";
 import "@/assets/global.css";
+import type { SendResult } from "@/shared/rpc/app";
 
 const INJECTED_ATTR = "data-twitter-webhook-injected";
 const ANCHOR_ID_ATTR = "data-twitter-webhook-anchor-id";
+
+const describeFailure = (result: Exclude<SendResult, { outcome: "delivered" }>): string => {
+  switch (result.outcome) {
+    case "rejected":
+      return `${result.name} (status ${result.status})`;
+    case "network_error":
+      return `${result.name} (network error)`;
+  }
+};
 
 const sendTweet = async (article: Element): Promise<void> => {
   const info = extractTweetInfo(article, location.href);
@@ -19,8 +29,12 @@ const sendTweet = async (article: Element): Promise<void> => {
   const { results } = await res.json();
   if (results.length === 0) throw new Error("no enabled webhooks (popup から追加してください)");
 
-  const failed = results.filter((r) => !r.ok);
-  if (failed.length > 0) throw new Error(`failed: ${failed.map((f) => f.name).join(", ")}`);
+  const failed = results.filter(
+    (r): r is Exclude<SendResult, { outcome: "delivered" }> => r.outcome !== "delivered",
+  );
+  if (failed.length > 0) {
+    throw new Error(`failed: ${failed.map((f) => describeFailure(f)).join(", ")}`);
+  }
 };
 
 export default defineContentScript({

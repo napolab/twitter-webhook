@@ -6,6 +6,11 @@ import type { Webhook } from "@/shared/webhooks/schema";
 import { readWebhooks, writeWebhooks } from "@/shared/webhooks/storage";
 import { buildDiscordPayload } from "@/shared/discord/payload";
 
+export type SendResult =
+  | { id: string; name: string; outcome: "delivered"; status: number }
+  | { id: string; name: string; outcome: "rejected"; status: number }
+  | { id: string; name: string; outcome: "network_error" };
+
 export const app = new Hono()
   .basePath("/rpc")
   .get("/webhooks", async (c) => {
@@ -44,21 +49,17 @@ export const app = new Hono()
       const enabled = webhooks.filter((w) => w.enabled);
       const results = await Promise.all(
         enabled.map(async (w) => {
-          const sendOne = async (): Promise<{
-            id: string;
-            name: string;
-            ok: boolean;
-            status?: number;
-          }> => {
+          const sendOne = async (): Promise<SendResult> => {
             try {
               const res = await fetch(w.url, {
                 method: "POST",
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify(payload),
               });
-              return { id: w.id, name: w.name, ok: res.ok, status: res.status };
+              const outcome = res.ok ? "delivered" : "rejected";
+              return { id: w.id, name: w.name, outcome, status: res.status };
             } catch {
-              return { id: w.id, name: w.name, ok: false };
+              return { id: w.id, name: w.name, outcome: "network_error" };
             }
           };
           return sendOne();

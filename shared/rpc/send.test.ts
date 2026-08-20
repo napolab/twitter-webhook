@@ -45,7 +45,7 @@ describe("POST /rpc/send", () => {
     expect(fetchMock.mock.calls[0]?.[0]).toBe("https://discord.com/api/webhooks/1/x");
     const body = JSON.parse(`${fetchMock.mock.calls[0]?.[1]?.body}`);
     expect(body.content).toContain("https://x.com/u/status/1");
-    expect(results).toEqual([{ id: "a", name: "on", ok: true, status: 204 }]);
+    expect(results).toEqual([{ id: "a", name: "on", outcome: "delivered", status: 204 }]);
   });
 
   it("reports failures per webhook", async () => {
@@ -57,7 +57,19 @@ describe("POST /rpc/send", () => {
       body: sendBody,
     });
     const { results } = await res.json();
-    expect(results).toEqual([{ id: "a", name: "on", ok: false, status: 429 }]);
+    expect(results).toEqual([{ id: "a", name: "on", outcome: "rejected", status: 429 }]);
+  });
+
+  it("reports network errors per webhook", async () => {
+    await seed();
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("Failed to fetch")));
+    const res = await app.request("/rpc/send", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: sendBody,
+    });
+    const { results } = await res.json();
+    expect(results).toEqual([{ id: "a", name: "on", outcome: "network_error" }]);
   });
 
   it("returns empty results when no enabled webhooks", async () => {
