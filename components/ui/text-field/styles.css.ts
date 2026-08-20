@@ -3,14 +3,14 @@ import { css } from "../../../styled-system/css";
 export const field = css({
   display: "flex",
   flexDirection: "column",
-  gap: "inline",
+  gap: "1",
 });
 
 // Mono micro-label — de-emphasised so the boxed input stays the focal point.
 export const label = css({
   fontFamily: "mono",
   fontWeight: "semibold",
-  fontSize: "xs",
+  fontSize: "2xs",
   color: "fg.muted",
 });
 
@@ -42,9 +42,9 @@ export const input = css({
   flex: "1",
   minW: "0",
   paddingInline: "element",
-  paddingBlock: "2",
+  paddingBlock: "1",
   fontFamily: "body",
-  fontSize: "md",
+  fontSize: "sm",
   color: "fg.default",
   bg: "transparent",
   borderWidth: "0",
@@ -58,6 +58,6 @@ export const input = css({
 export const error = css({
   fontFamily: "mono",
   fontWeight: "semibold",
-  fontSize: "xs",
+  fontSize: "2xs",
   color: "danger.text",
 });

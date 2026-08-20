@@ -3,11 +3,11 @@ import { css } from "../../styled-system/css";
 export const root = css({
   display: "flex",
   flexDirection: "column",
-  gap: "block",
+  gap: "2",
   w: "360px",
   minH: "320px",
   bg: "bg.canvas",
-  p: "page",
+  p: "3",
 });
 
 export const title = css({
@@ -24,7 +24,7 @@ export const sectionLabel = css({
   fontWeight: "semibold",
   letterSpacing: "wider",
   color: "fg.muted",
-  pt: "element",
+  pt: "2",
   borderTopWidth: "default",
   borderTopStyle: "solid",
   borderTopColor: "border.subtle",
@@ -54,7 +54,7 @@ export const errorRoot = css({
   display: "flex",
   flexDirection: "column",
   gap: "2",
-  p: "3",
+  p: "2",
   borderWidth: "default",
   borderStyle: "solid",
   borderColor: "danger.border",
