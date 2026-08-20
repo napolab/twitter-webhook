@@ -114,6 +114,7 @@ export default defineContentScript({
       void scan();
     });
     observer.observe(document.body, { childList: true, subtree: true });
+    ctx.onInvalidated(() => observer.disconnect());
     await scan();
   },
 });

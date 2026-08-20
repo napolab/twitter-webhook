@@ -41,7 +41,7 @@ export const app = new Hono()
   })
   .post(
     "/send",
-    zValidator("json", z.object({ url: z.url(), postedAt: z.string() })),
+    zValidator("json", z.object({ url: z.url(), postedAt: z.iso.datetime({ offset: true }) })),
     async (c) => {
       const input = c.req.valid("json");
       const payload = buildDiscordPayload(input);

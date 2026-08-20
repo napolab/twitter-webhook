@@ -80,4 +80,19 @@ describe("POST /rpc/send", () => {
     });
     expect(await res.json()).toEqual({ results: [] });
   });
+
+  it("rejects a malformed postedAt without calling fetch", async () => {
+    await seed();
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const res = await app.request("/rpc/send", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ url: "https://x.com/u/status/1", postedAt: "not-a-date" }),
+    });
+
+    expect(res.status).toBe(400);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 });
