@@ -76,6 +76,7 @@ export default defineConfig({
         spin: { to: { transform: "rotate(360deg)" } },
         oscFlash: { "0%": { opacity: "0.35" }, "100%": { opacity: "0" } },
         automationFade: { "0%": { opacity: "0" }, "100%": { opacity: "1" } },
+        skeletonPulse: { "0%, 100%": { opacity: "1" }, "50%": { opacity: "0.5" } },
       },
       layerStyles: {
         focusRing: {

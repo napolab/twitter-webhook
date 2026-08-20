@@ -1,68 +1,55 @@
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback } from "react";
+import { useSetAtom } from "jotai";
+import { ErrorBoundary } from "react-error-boundary";
 
-import { AddWebhookForm } from "@/components/add-webhook-form";
-import { WebhookList } from "@/components/webhook-list";
-import { rpc } from "@/shared/rpc/client";
+import { Button } from "@/components/ui/button";
 
+import { WebhookRequestError, webhooksAtom } from "./atoms";
 import * as styles from "./styles.css";
+import { WebhookSection } from "./webhook-section";
 
-import type { Webhook, WebhookInput } from "@/shared/webhooks/schema";
+import type { FallbackProps } from "react-error-boundary";
 
-export const App = () => {
-  const [webhooks, setWebhooks] = useState<Webhook[]>([]);
+const resolveErrorMessage = (error: unknown): string => {
+  if (error instanceof WebhookRequestError) {
+    return `webhook の読み込みに失敗しました (status: ${error.status})`;
+  }
+  return "webhook の読み込みに失敗しました";
+};
 
-  useEffect(() => {
-    const load = async () => {
-      const res = await rpc.rpc.webhooks.$get();
-      if (!res.ok) return;
-      setWebhooks(await res.json());
-    };
-    void load();
-  }, []);
+const WebhookErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => {
+  const refreshWebhooks = useSetAtom(webhooksAtom);
 
-  const handleAdd = useCallback(async (input: WebhookInput) => {
-    try {
-      const res = await rpc.rpc.webhooks.$post({ json: input });
-      if (!res.ok) return;
-      const created = await res.json();
-      setWebhooks((prev) => [...prev, created]);
-    } catch (error) {
-      console.error(error);
-    }
-  }, []);
-
-  const handleToggle = useCallback(async (id: string, enabled: boolean) => {
-    try {
-      const res = await rpc.rpc.webhooks[":id"].$patch({ param: { id }, json: { enabled } });
-      if (!res.ok) return;
-      const updated = await res.json();
-      setWebhooks((prev) => prev.map((webhook) => (webhook.id === id ? updated : webhook)));
-    } catch (error) {
-      console.error(error);
-    }
-  }, []);
-
-  const handleDelete = useCallback(async (id: string) => {
-    try {
-      const res = await rpc.rpc.webhooks[":id"].$delete({ param: { id } });
-      if (!res.ok) return;
-      setWebhooks((prev) => prev.filter((webhook) => webhook.id !== id));
-    } catch (error) {
-      console.error(error);
-    }
-  }, []);
+  const handleRetry = useCallback(() => {
+    refreshWebhooks();
+    resetErrorBoundary();
+  }, [refreshWebhooks, resetErrorBoundary]);
 
   return (
-    <main className={styles.root}>
-      <h1 className={styles.title}>TWITTER WEBHOOK</h1>
-      <section aria-label="登録済み webhook">
-        <h2 className={styles.srOnly}>登録済み webhook</h2>
-        <WebhookList webhooks={webhooks} onToggle={handleToggle} onDelete={handleDelete} />
-      </section>
-      <section aria-label="webhook 追加">
-        <h2 className={styles.sectionLabel}>ADD WEBHOOK</h2>
-        <AddWebhookForm onSubmit={handleAdd} />
-      </section>
-    </main>
+    <div className={styles.errorRoot} role="alert">
+      <p className={styles.errorMessage}>{resolveErrorMessage(error)}</p>
+      <Button variant="danger" onPress={handleRetry}>
+        再試行
+      </Button>
+    </div>
   );
 };
+
+const WebhookSkeleton = () => (
+  <div className={styles.skeletonRoot} role="status" aria-live="polite">
+    <span className={styles.srOnly}>読み込み中</span>
+    <div className={styles.skeletonRow} aria-hidden="true" />
+    <div className={styles.skeletonRow} aria-hidden="true" />
+  </div>
+);
+
+export const App = () => (
+  <main className={styles.root}>
+    <h1 className={styles.title}>TWITTER WEBHOOK</h1>
+    <ErrorBoundary FallbackComponent={WebhookErrorFallback}>
+      <Suspense fallback={<WebhookSkeleton />}>
+        <WebhookSection />
+      </Suspense>
+    </ErrorBoundary>
+  </main>
+);
