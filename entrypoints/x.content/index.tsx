@@ -6,6 +6,7 @@ import { rpc } from "@/shared/rpc/client";
 import { extractTweetInfo } from "@/shared/tweet/extract";
 import { appToastQueue, ToastContainer } from "@/components/ui/toast";
 import { SendButton } from "./send-button";
+import * as styles from "./styles.css";
 import "@/assets/global.css";
 import type { SendResult } from "@/shared/rpc/app";
 
@@ -119,6 +120,13 @@ export default defineContentScript({
         position: "inline",
         anchor: `[${ANCHOR_ID_ATTR}="${anchorId}"]`,
         append: "after",
+        // Scoped to this UI only (not the shared entry CSS bundle, and not
+        // the toast UI's own `createShadowRootUi` call below) — see
+        // `styles.hostAlignment`'s comment in `./styles.css.ts` for why this
+        // has to be a raw `:host` rule rather than a Panda class, and why it
+        // lives here instead of leaking into every shadow root this entry
+        // creates.
+        css: styles.hostAlignment,
         onMount: (container) => {
           const root = createRoot(container);
           root.render(<SendButton onSend={() => sendTweet(article)} />);
