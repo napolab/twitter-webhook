@@ -17,6 +17,7 @@
     ".claude/",
     "docs/",
     "CLAUDE.md",
-    "AGENTS.md"
+    "AGENTS.md",
+    "CHANGELOG.md"
   ]
 }
